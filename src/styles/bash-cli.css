@@ -1,0 +1,132 @@
+.bashWrap {
+  width: 100%;
+  height: 64vh;
+  min-height: 420px;
+  max-height: 760px;
+  background: #0c0c0c;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bashHeader {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+}
+
+.bashHeaderLeft {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+}
+
+.bashHeaderUser,
+.bashHeaderHost {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.bashHeaderEnv {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.bashHeaderPath {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+}
+
+.bashHistory {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 18px;
+  overflow: auto;
+}
+
+.bashLine {
+  margin: 4px 0;
+}
+
+.bashPrompt {
+  color: #33d17a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.bashInputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+}
+
+.bashInputInline {
+  min-height: 24px;
+  margin-top: 4px;
+}
+
+.bashTransfer {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  max-width: 520px;
+}
+
+.bashTransferLabel,
+.bashTransferAscii {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 14px;
+  color: rgba(229, 231, 235, 0.88);
+  white-space: pre;
+}
+
+.bashTransferAscii {
+  margin-top: 6px;
+  color: rgba(229, 231, 235, 0.7);
+}
+
+.bashInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 14px;
+  caret-color: #33d17a;
+}
+
+.bashInput:disabled {
+  opacity: 0.7;
+}
+
+.bashText {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 14px;
+  color: rgba(229, 231, 235, 0.9);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bashCmd .bashText {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.bashTextAlert {
+  color: #ff5f56;
+  font-weight: 700;
+}
+
+.bashEmpty {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  font-size: 14px;
+  color: rgba(229, 231, 235, 0.5);
+}

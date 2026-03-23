@@ -1,0 +1,111 @@
+:root {
+  --al-sidebar-bg: #d9edf9;
+  --al-sidebar-border: rgba(0, 0, 0, 0.06);
+}
+
+.alShell {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background: #ffffff;
+}
+
+.alSidebar {
+  width: 160px;
+  background: var(--al-sidebar-bg);
+  border-right: 1px solid var(--al-sidebar-border);
+  padding: 8px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.alBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px 8px;
+}
+
+.alBrandMark {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(24, 119, 242, 0.12);
+  border: 1px solid rgba(24, 119, 242, 0.2);
+  color: #1677ff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.alBrandText {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #0b3a69;
+  font-size: 24px;
+}
+
+.alNav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.alNavItem {
+  text-decoration: none;
+  color: #303943;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px;
+  font-size: 16px;
+}
+
+.alNavItem:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.alNavItem.isActive {
+  background: #808891;
+  color: #111111;
+}
+
+.alIcon {
+  display: inline-flex;
+  color: inherit;
+}
+
+.alContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+}
+
+.alHeader {
+  padding: 42px 36px 20px;
+  text-align: center;
+}
+
+.alHeaderTitle {
+  font-weight: 600;
+  font-size: 34px;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.alHeaderSubtitle {
+  font-size: 13px;
+  color: rgba(17, 24, 39, 0.72);
+  font-weight: 500;
+}
+
+.alMain {
+  padding: 0 28px 40px;
+  min-width: 0;
+}
