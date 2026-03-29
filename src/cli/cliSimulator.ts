@@ -170,7 +170,7 @@ const CODE_UPLOAD_FAILURE_DETAILS = [
   'Invalid indentation detected (tabs found, expected spaces).',
   'Unresolved TODO comment found in code.',
   'Variable or function naming does not match required naming conventions (camelCase instead of snake_case).',
-  'Usage of print statements is not allowed in production code.',
+  'Usage of print statements for logging is not acceptable in production code.',
   'Unnecessary blank line detected.',
   'Imports are not properly alphabetized.',
   'Line length exceeds maximum allowed characters (80 characters).',
