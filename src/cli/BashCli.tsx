@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CliSimulator } from './cliSimulator'
+import { OPENCLAW_LINE_PREFIX, simulatedOpenclawWipeLine } from './cliSimulator'
 import '../styles/bash-cli.css'
 
 type HistoryItem = {
@@ -8,7 +9,7 @@ type HistoryItem = {
 }
 
 type ActiveTransfer = {
-  verb: 'upload' | 'download'
+  verb: 'upload' | 'download' | 'code-upload'
   progress: number
 }
 
@@ -32,7 +33,21 @@ function getOutputLineClass(line: string): string {
   if (line.startsWith('SECURITY ALERT:')) {
     return 'bashText bashTextAlert'
   }
+  if (line.startsWith(OPENCLAW_LINE_PREFIX)) {
+    return 'bashText bashTextOpenclaw'
+  }
   return 'bashText'
+}
+
+function splitOpenclawOutput(lines: string[]): { immediate: string[]; openclaw: string[] } {
+  const i = lines.findIndex((l) => l.startsWith(OPENCLAW_LINE_PREFIX))
+  if (i === -1) return { immediate: lines, openclaw: [] }
+  return { immediate: lines.slice(0, i), openclaw: lines.slice(i) }
+}
+
+function openclawDotsLabel(phase: number): string {
+  const n = phase % 4
+  return `${OPENCLAW_LINE_PREFIX} is thinking${'.'.repeat(n)}`
 }
 
 export default function BashCli({
@@ -50,10 +65,14 @@ export default function BashCli({
   const [historyIndex, setHistoryIndex] = useState<number | null>(null)
   const [activeTransfer, setActiveTransfer] = useState<ActiveTransfer | null>(null)
   const [activeWipe, setActiveWipe] = useState<ActiveWipe | null>(null)
+  const [openclawTyping, setOpenclawTyping] = useState(false)
+  const [openclawDotPhase, setOpenclawDotPhase] = useState(0)
 
   const inputRef = useRef<HTMLInputElement | null>(null)
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null)
   const draftInputRef = useRef('')
+  const pendingOpenclawLinesRef = useRef<string[] | null>(null)
+  const postOpenclawRevealRef = useRef<(() => void) | null>(null)
   const transferTimerRef = useRef<number | null>(null)
   const transferIntervalRef = useRef<number | null>(null)
   const wipeTimerRef = useRef<number | null>(null)
@@ -76,11 +95,54 @@ export default function BashCli({
 
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [history, activeTransfer, activeWipe])
+  }, [history, activeTransfer, activeWipe, openclawTyping])
+
+  useEffect(() => {
+    if (!openclawTyping) return
+    const dotId = window.setInterval(() => {
+      setOpenclawDotPhase((p) => (p + 1) % 4)
+    }, 380)
+    const delayMs = 1200 + Math.floor(Math.random() * 1800)
+    const revealId = window.setTimeout(() => {
+      window.clearInterval(dotId)
+      const lines = pendingOpenclawLinesRef.current
+      pendingOpenclawLinesRef.current = null
+      if (lines && lines.length > 0) {
+        setHistory((prev) => [...prev, { kind: 'out', lines }])
+      }
+      setOpenclawTyping(false)
+      const runNext = postOpenclawRevealRef.current
+      postOpenclawRevealRef.current = null
+      if (runNext) {
+        runNext()
+      } else {
+        inputRef.current?.focus()
+      }
+    }, delayMs)
+    return () => {
+      window.clearInterval(dotId)
+      window.clearTimeout(revealId)
+    }
+  }, [openclawTyping])
+
+  const appendCommandOutput = useCallback((resultLines: string[]) => {
+    const { immediate, openclaw } = splitOpenclawOutput(resultLines)
+    if (openclaw.length === 0) {
+      setHistory((prev) => [...prev, { kind: 'out', lines: immediate }])
+      return
+    }
+    if (immediate.length > 0) {
+      setHistory((prev) => [...prev, { kind: 'out', lines: immediate }])
+    }
+    pendingOpenclawLinesRef.current = openclaw
+    setOpenclawDotPhase(0)
+    setOpenclawTyping(true)
+  }, [])
 
   const beginWipeSequence = (commandLine: string) => {
     const state = simulator.getState()
     const targets = [
+      'OpenClaw',
       ...Object.keys(state.containers).map((name) => `container ${name}`),
       ...state.resources.map((name) => `resource ${name}`),
       ...state.keyvaults.map((name) => `keyvault ${name}`),
@@ -93,7 +155,8 @@ export default function BashCli({
     const runStep = () => {
       const target = targets[index]
       if (!target) {
-        simulator.runCommand(commandLine)
+        const { outputLines } = simulator.runCommand(commandLine)
+        setHistory((prev) => [...prev, { kind: 'out', lines: outputLines }])
         setActiveWipe(null)
         window.setTimeout(() => onSystemDestroyed?.(), 250)
         return
@@ -119,7 +182,11 @@ export default function BashCli({
 
         window.setTimeout(() => {
           const line =
-            target === "'clANDII'" ? "removing 'clANDII' complete" : `${target} removed`
+            target === 'OpenClaw'
+              ? 'OpenClaw removed'
+              : target === "'clANDII'"
+                ? "removing 'clANDII' complete"
+                : `${target} removed`
 
           setHistory((prev) => [...prev, { kind: 'out', lines: [line] }])
           index += 1
@@ -135,7 +202,7 @@ export default function BashCli({
     const cmd = input.trim()
     setInput('')
     if (!cmd) return
-    if (activeTransfer || activeWipe) return
+    if (activeTransfer || activeWipe || openclawTyping) return
 
     setCommandHistory((prev) => [...prev, cmd])
     setHistoryIndex(null)
@@ -143,7 +210,10 @@ export default function BashCli({
     setHistory((prev) => [...prev, { kind: 'cmd', lines: [`${prompt} ${cmd}`] }])
 
     if (cmd === 'rm -rf*') {
-      beginWipeSequence(cmd)
+      postOpenclawRevealRef.current = () => {
+        beginWipeSequence(cmd)
+      }
+      appendCommandOutput([simulatedOpenclawWipeLine()])
       return
     }
 
@@ -151,10 +221,13 @@ export default function BashCli({
       ? 'download'
       : cmd.startsWith('upload ')
         ? 'upload'
-        : null
+        : cmd.startsWith('code-upload ')
+          ? 'code-upload'
+          : null
 
     if (verb) {
-      const durationMs = 3000 + Math.floor(Math.random() * 7001)
+      const durationMs =
+        verb === 'code-upload' ? 5000 : 3000 + Math.floor(Math.random() * 7001)
       const startedAt = Date.now()
       setActiveTransfer({ verb, progress: 0 })
 
@@ -172,16 +245,20 @@ export default function BashCli({
         setActiveTransfer((prev) => (prev ? { ...prev, progress: 100 } : prev))
         const result = simulator.runCommand(cmd).outputLines
         window.setTimeout(() => {
-          setHistory((prev) => [...prev, { kind: 'out', lines: result }])
+          const hasOpenclaw = splitOpenclawOutput(result).openclaw.length > 0
+          appendCommandOutput(result)
           setActiveTransfer(null)
           transferTimerRef.current = null
-          inputRef.current?.focus()
+          if (!hasOpenclaw) inputRef.current?.focus()
         }, 180)
       }, durationMs)
       return
     }
 
-    setHistory((prev) => [...prev, { kind: 'out', lines: simulator.runCommand(cmd).outputLines }])
+    const outLines = simulator.runCommand(cmd).outputLines
+    const hasOpenclaw = splitOpenclawOutput(outLines).openclaw.length > 0
+    appendCommandOutput(outLines)
+    if (!hasOpenclaw) inputRef.current?.focus()
   }
 
   const showPreviousCommand = () => {
@@ -239,7 +316,12 @@ export default function BashCli({
         {activeTransfer ? (
           <div className="bashTransfer" aria-live="polite">
             <div className="bashTransferLabel">
-              {activeTransfer.verb === 'download' ? 'Downloading' : 'Uploading'}...
+              {activeTransfer.verb === 'download'
+                ? 'Downloading'
+                : activeTransfer.verb === 'upload'
+                  ? 'Uploading'
+                  : 'Scanning'}
+              ...
             </div>
             <div className="bashTransferAscii">{formatAsciiProgress(activeTransfer.progress)}</div>
           </div>
@@ -252,13 +334,19 @@ export default function BashCli({
           </div>
         ) : null}
 
+        {openclawTyping ? (
+          <div className="bashLine bashOpenclawTyping" aria-live="polite">
+            <div className="bashText bashTextOpenclaw">{openclawDotsLabel(openclawDotPhase)}</div>
+          </div>
+        ) : null}
+
         <div className="bashInputRow bashInputInline">
           <span className="bashPrompt">{prompt}</span>
           <input
             ref={inputRef}
             className="bashInput"
             value={input}
-            disabled={Boolean(activeTransfer || activeWipe)}
+            disabled={Boolean(activeTransfer || activeWipe || openclawTyping)}
             spellCheck={false}
             onChange={(e) => {
               setInput(e.target.value)

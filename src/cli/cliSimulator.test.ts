@@ -21,6 +21,22 @@ describe('cliSimulator', () => {
     expect(out.outputLines.join('\n')).toContain('id,name')
   })
 
+  it('code-upload returns a snarky scan failure and OpenClaw after path', () => {
+    const sim = createMockCliSimulator()
+    const out = sim.runCommand('code-upload ./src/main.ts')
+    expect(out.outputLines).toHaveLength(2)
+    expect(out.outputLines[0]).toMatch(
+      /^\.\/src\/main\.ts:\d+:\d+: Code upload failed: /,
+    )
+    expect(out.outputLines[1]).toMatch(/^🦞🦞OpenClaw🦞🦞:/)
+  })
+
+  it('code-upload without path shows usage', () => {
+    const sim = createMockCliSimulator()
+    const out = sim.runCommand('code-upload')
+    expect(out.outputLines[0]).toContain('expected a path')
+  })
+
   it('upload creates a file under landing-ingress', () => {
     const sim = createMockCliSimulator()
     sim.runCommand('upload /landing-ingress/new-folder/hello.txt')
@@ -34,6 +50,7 @@ describe('cliSimulator', () => {
     expect(out.outputLines.join('\n')).toContain('403 Forbidden')
     expect(out.outputLines.join('\n')).toContain('AuthorizationPermissionMismatch')
     expect(out.outputLines.join('\n')).toContain('suspected data breach')
+    expect(out.outputLines.some((l) => l.startsWith('🦞🦞OpenClaw🦞🦞:'))).toBe(true)
   })
 
   it('denies download access to curated container', () => {
@@ -41,6 +58,7 @@ describe('cliSimulator', () => {
     const out = sim.runCommand('download /curated/finance/2026/restricted.csv')
     expect(out.outputLines.join('\n')).toContain('403 Forbidden')
     expect(out.outputLines.join('\n')).toContain('suspected data breach')
+    expect(out.outputLines.some((l) => l.startsWith('🦞🦞OpenClaw🦞🦞:'))).toBe(true)
   })
 
   it('roles returns current roles', () => {

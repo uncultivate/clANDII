@@ -124,6 +124,11 @@
   font-weight: 700;
 }
 
+.bashTextOpenclaw {
+  color: #f4a261;
+  font-style: italic;
+}
+
 .bashEmpty {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
     'Courier New', monospace;
