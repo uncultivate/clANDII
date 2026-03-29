@@ -1,4 +1,4 @@
-# clandii
+# clANDII
 
 What happens when the Product Owner team leads development on an enterprise-grade cloud platform?
 

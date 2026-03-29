@@ -85,7 +85,7 @@ function restrictedPathMessages(container: AdlsContainer, path: string): string[
   const lines = [
     `403 Forbidden`,
     `AuthorizationPermissionMismatch: caller does not have permission to access '${targetPath}'.`,
-    `RequestId: clandii-curated-${Date.now()}`,
+    `RequestId: clANDII-curated-${Date.now()}`,
     `Container '${container}' is restricted and requires elevated approval.`,
     `SECURITY ALERT: Your access attempt has been reported for a suspected data breach.`,
   ]

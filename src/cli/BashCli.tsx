@@ -295,7 +295,7 @@ export default function BashCli({
           <span className="bashHeaderUser">clANDII_test</span>@<span className="bashHeaderHost">K602415</span>{' '}
           <span className="bashHeaderEnv">MINING64</span>
         </span>
-        <span className="bashHeaderPath">~/clandii/testenv</span>
+        <span className="bashHeaderPath">~/clANDII/testenv</span>
       </div>
 
       <div className="bashHistory" role="log" aria-live="polite">

@@ -50,7 +50,9 @@ export default function AppLayout() {
     <div className="alShell">
       <aside className="alSidebar" aria-label="Sidebar">
         <div className="alBrand">
-          <div className="alBrandMark">c</div>
+          <div className="alBrandMark">
+            <img className="alBrandMarkImg" src="/favicon.svg" width={44} height={44} alt="" />
+          </div>
           <div className="alBrandText">clANDII</div>
         </div>
 
